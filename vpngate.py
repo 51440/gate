@@ -589,8 +589,15 @@ def build_sub_text(data):
                 n.get("host") or "",
             ),
         )
+        ri = di = 0
         for i, n in enumerate(nodes, 1):
-            name = f"{zh}-{i:02d}"
+            # 名字与 chains.txt / hosts.txt 保持一致: 国家-住宅/机房-编号
+            if n.get("residential") == "residential":
+                ri += 1
+                name = f"{zh}-住宅-{ri:02d}"
+            else:
+                di += 1
+                name = f"{zh}-机房-{di:02d}"
             chain = {"type": "sstp", **_socks5_account(f"vpn:vpn@{n['host']}:{n['port']}", 443)}
             chain_json = json.dumps(chain, separators=(",", ":"))
             enc = _b64_secret_encode(chain_json, EDT_UUID)
