@@ -40,6 +40,10 @@ jobs:
           CHECK_TIMEOUT: "90"
           EDT_UUID: ${{ secrets.EDT_UUID }}
           EDT_DOMAIN: ${{ secrets.EDT_DOMAIN }}
+          # 公开订阅地址（非敏感，直接写明）
+          CHAIN_URL: "https://51440.github.io/gate/chains.txt"
+          HOSTS_URL: "https://51440.github.io/gate/hosts.txt"
+          SUB_URL: "https://51440.github.io/gate/sub.txt"
 
       - name: Ensure GitHub Pages is enabled (one-time auto setup)
         run: |
