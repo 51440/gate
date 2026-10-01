@@ -611,6 +611,20 @@ def build_sub_text(data):
     return "\n".join(lines) + "\n"
 
 
+def build_link_text(data):
+    """无注释纯 vless:// 链接, 每行一条, 无 # 注释行。
+
+    给 edgetunnel 后台「自定义优选IP」框填 URL 用
+    (https://<user>.github.io/gate/link.txt):
+    面板抓取后, 无论新老版本都会把内容识别为 LINK 节点订阅,
+    每 30 分钟检测更新后自动生效, 无需手动复制粘贴。
+    链式代理已编码在 path, 节点名含 住宅/机房 标识。
+    """
+    sub_text = build_sub_text(data)
+    links = [l for l in sub_text.splitlines() if l.startswith("vless://")]
+    return "\n".join(links) + "\n"
+
+
 def write_outputs(data):
     os.makedirs(PUBLIC_DIR, exist_ok=True)
     data_path = os.path.join(PUBLIC_DIR, "data.json")
@@ -643,7 +657,14 @@ def write_outputs(data):
     sub_path = os.path.join(PUBLIC_DIR, "sub.txt")
     with open(sub_path, "w", encoding="utf-8") as f:
         f.write(build_sub_text(data))
-    return data_path, html_path, chains_path, hosts_path, sub_path
+
+    # 无注释纯 vless:// 链接: 给后台「自定义优选IP」框填 URL 用
+    # 面板抓取后, 新老版本都会识别为 LINK 节点内容 (sub.txt 开头的 # 注释行
+    # 会导致老版本面板误判为 IP 列表而丢弃, 因此单独生成此文件)
+    link_path = os.path.join(PUBLIC_DIR, "link.txt")
+    with open(link_path, "w", encoding="utf-8") as f:
+        f.write(build_link_text(data))
+    return data_path, html_path, chains_path, hosts_path, sub_path, link_path
 
 
 # ---------------------------------------------------------------------------
@@ -695,12 +716,13 @@ def main():
     log("RESULT", f"可用节点: {len(success)}")
     log("RESULT", f"国家数量: {data['stats']['countries']}")
 
-    data_path, html_path, chains_path, hosts_path, sub_path = write_outputs(data)
+    data_path, html_path, chains_path, hosts_path, sub_path, link_path = write_outputs(data)
     log("WEBSITE", f"生成 {os.path.relpath(data_path, REPO_DIR)}")
     log("WEBSITE", f"生成 {os.path.relpath(html_path, REPO_DIR)}")
     log("WEBSITE", f"生成 {os.path.relpath(chains_path, REPO_DIR)}")
     log("WEBSITE", f"生成 {os.path.relpath(hosts_path, REPO_DIR)}")
     log("WEBSITE", f"生成 {os.path.relpath(sub_path, REPO_DIR)}")
+    log("WEBSITE", f"生成 {os.path.relpath(link_path, REPO_DIR)}")
     log("WEBSITE", "完成 (GitHub Pages 部署由 workflow 执行)")
 
 
